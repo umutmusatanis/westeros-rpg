@@ -1,29 +1,46 @@
-import api from './api';
-import { Character } from '../../../shared/types';
+// MOCK MODE - No Backend Required!
+import { mockAuthService } from './mockAuthService';
 
 export const characterService = {
+  // Get all characters for current user
   getCharacters: async () => {
-    const response = await api.get('/characters');
-    return response.data;
+    const result = await mockAuthService.getCharacters();
+    return { data: { characters: result.characters } };
   },
 
+  // Get character by ID
   getCharacterById: async (id: string) => {
-    const response = await api.get(`/characters/${id}`);
-    return response.data;
+    const result = await mockAuthService.getCharacterById(id);
+    return { data: { character: result.character } };
   },
 
-  createCharacter: async (characterData: Partial<Character>) => {
-    const response = await api.post('/characters', characterData);
-    return response.data;
+  // Create new character
+  createCharacter: async (characterData: any) => {
+    const result = await mockAuthService.createCharacter(characterData);
+    return { data: { character: result.character } };
   },
 
-  updateCharacter: async (id: string, updates: Partial<Character>) => {
-    const response = await api.put(`/characters/${id}`, updates);
-    return response.data;
+  // Update character (mock - just saves to localStorage)
+  updateCharacter: async (id: string, updates: any) => {
+    const saved = localStorage.getItem('characters');
+    const characters = saved ? JSON.parse(saved) : [];
+    const index = characters.findIndex((c: any) => c._id === id);
+    
+    if (index >= 0) {
+      characters[index] = { ...characters[index], ...updates };
+      localStorage.setItem('characters', JSON.stringify(characters));
+      return { data: { character: characters[index] } };
+    }
+    
+    throw new Error('Character not found');
   },
 
+  // Delete character (mock)
   deleteCharacter: async (id: string) => {
-    const response = await api.delete(`/characters/${id}`);
-    return response.data;
-  },
+    const saved = localStorage.getItem('characters');
+    const characters = saved ? JSON.parse(saved) : [];
+    const filtered = characters.filter((c: any) => c._id !== id);
+    localStorage.setItem('characters', JSON.stringify(filtered));
+    return { data: { success: true } };
+  }
 };

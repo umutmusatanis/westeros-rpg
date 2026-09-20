@@ -1,4 +1,5 @@
-import api from './api';
+// MOCK MODE - No Backend Required!
+import { mockAuthService } from './mockAuthService';
 
 export interface RegisterData {
   username: string;
@@ -13,8 +14,8 @@ export interface LoginData {
 
 export interface AuthResponse {
   success: boolean;
-  message: string;
-  data: {
+  message?: string;
+  data?: {
     token: string;
     user: {
       id: string;
@@ -22,21 +23,46 @@ export interface AuthResponse {
       email: string;
     };
   };
+  token?: string;
+  user?: any;
 }
 
 export const authService = {
   register: async (data: RegisterData): Promise<AuthResponse> => {
-    const response = await api.post('/auth/register', data);
-    return response.data;
+    const result = await mockAuthService.register(data.username, data.email, data.password);
+    return {
+      success: result.success,
+      token: result.token,
+      user: result.user,
+      data: {
+        token: result.token,
+        user: result.user
+      }
+    };
   },
 
   login: async (data: LoginData): Promise<AuthResponse> => {
-    const response = await api.post('/auth/login', data);
-    return response.data;
+    const result = await mockAuthService.login(data.email, data.password);
+    return {
+      success: result.success,
+      token: result.token,
+      user: result.user,
+      data: {
+        token: result.token,
+        user: result.user
+      }
+    };
   },
 
   getProfile: async () => {
-    const response = await api.get('/auth/profile');
-    return response.data;
+    return { user: mockAuthService.getCurrentUser() };
   },
+
+  logout: () => {
+    mockAuthService.logout();
+  },
+
+  isAuthenticated: (): boolean => {
+    return mockAuthService.isLoggedIn();
+  }
 };
